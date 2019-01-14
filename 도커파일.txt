@@ -1,0 +1,55 @@
+docker-compose.yml
+version: '3'
+
+services:
+  db:
+    container_name: evcomp_mysql
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "evcomp"
+      MYSQL_DATABASE: "evcomp"
+      MYSQL_USER: "evcomp"
+      MYSQL_PASSWORD: "evcomp"
+    ports:
+      - "3315:3306"
+
+  web:
+    build: .
+    command: python3 manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8005:8000"
+    depends_on:
+      - db
+	
+dockerfile
+FROM python:3.5
+ENV PYTHONUNBUFFERED 1
+RUN mkdir /code
+WORKDIR /code
+ADD requirements.txt /code/
+RUN pip install -r requirements.txt
+ADD . /code/
+
+requirements.txt
+Django>2.0
+psycopg2
+mysqlclient
+djangomako==1.1.1
+requests
+bs4
+pandas
+django-autocomplete-light
+
+
+version: '3'
+services:
+  db:
+    build: .
+    image: jmj8038/evcomp_mysql:0.1  # goes to example.com registry
+
+  web:
+    build: .
+    image: jmj8038/evcomp_django:0.1  # goes to youruser DockerHub registry
+~

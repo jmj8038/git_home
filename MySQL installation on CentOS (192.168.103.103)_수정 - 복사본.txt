@@ -1,0 +1,138 @@
+﻿DB Server info
+	ip : 192.168.103.103
+	username : encore
+	password : encore
+	os version : CentOS Linux release 7.5.1804 (Core) Derived from Red Hat Enterprise Linux 7.5 (Source)
+	kernel version : 3.10.0-862.e17.x86_64
+	RDBMS : MySQL 5.7
+	
+========================================================================================================
+
+login as: encore
+encore@192.168.103.103's password: encore
+[sudo] encore의 암호 : encore
+
+========================================================================================================
+
+step 1. wget 명령으로 직접 mysql-community 패키지 다운로드
+	[class13:/home/encore:]$ wget https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+
+step 2. mysql-community 패키지 설치
+	[class13:/home/encore:]$ sudo yum localinstall mysql-community-release-el7-11.noarch.rpm
+
+step 3. mysql yum repository 활성화
+	[class13:/home/encore:]$ yum repolist enabled | grep "mysql.*-community.*"
+
+step 4. mysql-community-server 설치 (의존성이 걸려있는 mysql-community-server, mysql-community-client, mysql-community-libs, mysql-community-common 패키지 설치)
+	[class13:/home/encore:]$ yum install mysql-community-server
+	
+	- Error 발생
+		Loaded plugins: fastestmirror, langpacks
+		You need to be root to perform this command
+			- 관리자(root) 계정이 아닌 사용자 계정에서 yum 명령어를 사용했기 때문
+	
+	- Error 해결방법
+		관리자(root) 계정으로 전환 후 명령어 실행
+
+step 5. mysql-community-server 설치 (sudo 권한으로 실행)
+	[class13:/home/encore:]$ sudo yum install mysql-community-server
+		
+step 6. mysql 서비스 start
+	[class13:/home/encore:]$ systemctl start mysqld.service
+		==== AUTHENTICATING FOR org.freedesktop.systemdl.manage-units ====
+		Authentication is required to manage system services or units.
+		Authentication as: encore
+		Password: encore
+		
+		==== AUTHENTICATION COMPLETE ===
+
+step 7. 시스템 부팅시 mysql 자동 구동되도록 설정
+	[class13:/home/encore:]$ systemctl enable mysqld
+		==== AUTHENTICATING FOR org.freedesktop.systemdl.manage-unit-files ====
+		Authentication is required to manage system services or units.
+		Authentication as: encore
+		Password: encore
+		
+		==== AUTHENTICATION COMPLETE ===
+		==== AUTHENTICATING FOR org.freedesktop.systemdl.reload-daemon ====
+		Authentication is required to reload the systemd state.
+		Authentication as: encore
+		Password: encore
+		
+		==== AUTHENTICATION COMPLETE ===
+		
+	[class13:/home/encore:]$ systemctl restart mysqld
+		==== AUTHENTICATING FOR org.freedesktop.systemdl.manage-units ====
+		Authentication is required to manage system services or units.
+		Authentication as: encore
+		Password: encore
+		
+		==== AUTHENTICATION COMPLETE ===
+		
+step 8. mysql 로그인 전 임시 비밀번호 확인
+	[class13:/home/encore:]$ grep 'temporary password' /var/log/mysqld.log
+		2018-12-13T01:23:53.974410Z 1 [Note] A temporary password is generated for root@localhost: e,#Qw0YfggIA
+		
+step 9. mysql 로그인
+	[class13:/home/encore:]$ mysql -u root -p
+		Enter password: e,#Qw0YfggIA
+
+step 10. mysql 계정의 password policy 변경
+	mysql> SET GLOBAL validate_password_policy=LOW;
+	
+step 11. mysql root계정 비밀번호 변경
+	mysql> alter user 'root'@'localhost' identified by '새비밀번호';
+		ex) alter user 'root'@'localhost' identified by 'root12345';
+		
+step 12. 비밀번호 변경한 것 저장 후 종료
+	mysql> commit;
+	mysql> quit
+
+step 13. mysql 다시 로그인
+	[class13:/home/encore:]$ mysql -u root -p
+		Password: 새로 변경한 root 계정 비밀번호 입력
+
+step 14. 모든 데이터베이스에 root 계정이 모든 ip에서 접속 가능하게 설정
+	mysql> GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'root12345';
+	mysql> FLUSH PRIVILEGES;
+	
+step 15. mysql db 사용 (기본으로 설치되어 있는 db, db명 : mysql)
+	mysql> use mysql
+	
+step 16. mysql db 내 table 확인
+	mysql> show tables;
+	
+step 17. 새로운 db 생성
+	mysql> create database 'database명' default character set utf8;
+		ex) create database test default character set utf8;
+		
+		- 우리 프로젝트의 raw data에 대한 db명은 project
+			mysql> create database project default character set utf8;
+			
+step 18. 방화벽 포트 open (외부 접속 허용)
+	[class13:/home/encore:]$ sudo firewall-cmd --add-port=3306/tcp
+	[class13:/home/encore:]$ sudo firewall-cmd --permanent --add-port=3306/tcp
+	[class13:/home/encore:]$ sudo firewall-cmd --reload
+	Succcess
+		22, 3306번 port 오픈
+		
+		
+SQLGate for MySQL Developer 9.2.0.2에서 DB 접속 확인방법
+	호스트 : 192.168.103.103
+	암호 : root12345 (암호 저장 선택)
+	포트 : 3306
+	데이터베이스 : mysql
+	문자집합 : utf8
+	데이터정렬 : default
+	
+	이후 연결 버튼 선택 -> 문자 집합에 대한 alert 창 뜸 (서버와 클라이언트 간 문자집합 일치하게 하라고 함)
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
