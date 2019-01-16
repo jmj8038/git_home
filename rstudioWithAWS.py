@@ -72,6 +72,7 @@ AWS EC2 ubuntu에서 R, Rstudio, Rstudio-server 설치 및 설정
             1. 일반적인 경우 : https://리눅스_서버_ip_주소:8787
             2. ec2 : http://public DNS:8787
                 예시) http://ec2-54-180-162-14.ap-northeast-2.compute.amazonaws.com:8787
+                id, pw 입력 
         9. 기타 사항
             1. 에러 발생
                 apt-get 설치시 아래와 같은 에러메시지가 발생할 경우 처리
@@ -89,6 +90,38 @@ AWS EC2 ubuntu에서 R, Rstudio, Rstudio-server 설치 및 설정
                 $sudo dpkg -l
                 $sudo dpkg -l | grep mysql (특정 package 검색)
             3. user id 및 pw 설정
+                rstudio-server에서는 동시접속 불가
+                리눅스 유저 계정으로 개별 접속 가능 
+                다만, 유저 생성시 동일 디렉터리로 설정을 하면 동일 session에서 작업은 가능
+                    : 파일 및 폴더 권한 설정 등 요구됨
+                    : 동시 접속 불가
+
+                1. user 생성 (개별 디렉터리 사용)
+                    $sudo adduser username
+                        : 일반적으로 $sudo useradd 명령문을 사용하나 이 경우 rstudio-server 접속 불가
+                        : user 생성시 pw 동시 생성, job, company등 정보 요구(필수는 아님)
+                2. user 생성 (동일 디렉터리 사용)
+                    $sudo adduser --home <dir> username
+                        예시) sudo adduser --home /home/mjjin/ dhseo
+                        : rstudio-server 접속시 동일 session에서 작업 가능
+                    참고 url : https://stackoverflow.com/questions/22938305/run-multiple-instances-of-rstudio-in-a-web-browser
+            4. 파일질라 활용 자료 업로드 및 다운로드
+                1. key 등록
+                    : <편집> - <설정> - <연결> - <SFTP> 에서 (파일명.ppk) 등록
+                2. 연결 설정
+                    : <편집> - <설정> - <연결> - <재연결 설정> - <최대 재시도 횟수> 에서 (99) 입력
+                        : 파일질라에서 ec2 접속이 용이하지 않음
+                3. 사이트 관리자 설정
+                    : <파일> 밑의 아이콘 클릭 - <새사이트> - <이름 등록>  
+                        프로토콜 : SFTP-SSH File Transfer Protocol
+                        호스트 : public DNS 
+                            ec2-54-180-162-14.ap-northeast-2.compute.amazonaws.com
+                        로그온 유형 : 일반 OR 키파일
+                            키파일 선택시 : 파일명.ppk 등록 (이 경우 4.1.의 key등록 과정 불필요)
+                        이름 : ubuntu
+                        확인 
+
+                    
                 
             
 
